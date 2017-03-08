@@ -30,11 +30,13 @@ public class FaceRecognition {
     public void processLogin(String username, File uploadedFile) throws IOException{
         Comparator comp = new Comparator();
         
-        File storedFile = new File(username + ".jpg");
+        BufferedImage submittedImage = ImageIO.read(uploadedFile);
+        FaceDetector fd = new FaceDetector();
+        BufferedImage processedImage = fd.detectFace(submittedImage);
         
         BufferedImage storedImage = this.loadImage(username);
         
-        boolean result = comp.compareImage(storedImage, uploadedFile);
+        boolean result = comp.compareImage(storedImage, processedImage);
         
         if(result){
             loginWindow.setVisible(false);
@@ -46,30 +48,30 @@ public class FaceRecognition {
         
     }
     
-    public void saveImage(String path, String userName)
-    {
+    public void saveImage(String path, String userName){
         BufferedImage img = null;
         try {
             System.out.println("setting path");
             img = ImageIO.read(new File(path));
-            System.out.println("Creating file");
-            File outputfile = new File(userName);
+            
+            System.out.println("detect file");
+            FaceDetector fd = new FaceDetector();
+            BufferedImage editedImg = fd.detectFace(img);
+            
+            File outputfile = new File(userName + ".png");
             System.out.println("saving File");
-            ImageIO.write(img, "png", outputfile);
-            } 
-        catch (IOException e) 
-        {
+            ImageIO.write(editedImg, "png", outputfile);
+        } 
+        catch (IOException e) {
             e.printStackTrace();
         }    
     }
     
-    public BufferedImage loadImage(String fileName)
-    {
+    public BufferedImage loadImage(String fileName){
         BufferedImage img = null;
-        try 
-        {
+        try {
         System.out.println("setting path");
-        img = ImageIO.read(new File(fileName));
+        img = ImageIO.read(new File(fileName + ".png"));
         }
         catch (IOException e)
         {

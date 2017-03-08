@@ -15,13 +15,12 @@ import javax.imageio.ImageIO;
  * @author User
  */
 public class Comparator {
-    public boolean compareImage(BufferedImage biA, File fileB) {        
+    public boolean compareImage(BufferedImage biA, BufferedImage biB) {        
     try {
         // take buffer data from botm image files //
         
         DataBuffer dbA = biA.getData().getDataBuffer();
         int sizeA = dbA.getSize();                      
-        BufferedImage biB = ImageIO.read(fileB);
         DataBuffer dbB = biB.getData().getDataBuffer();
         int sizeB = dbB.getSize();
         // compare data-buffer objects //
