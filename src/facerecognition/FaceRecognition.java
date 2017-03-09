@@ -8,7 +8,11 @@ package facerecognition;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import javax.imageio.ImageIO;
 
 
@@ -36,21 +40,40 @@ public class FaceRecognition {
         
         BufferedImage storedImage = this.loadImage(username);
         
-        boolean result = comp.compareImage(storedImage, processedImage);
+        float diff = comp.compareRGB(submittedImage, storedImage);
         
-        if(result){
+//        float percentage = comp.compareImagePercentage(storedImage, processedImage);
+//        System.out.println(percentage);
+        
+//        boolean result = comp.compareImage(storedImage, processedImage);
+//        
+        if(diff<50){
             loginWindow.setVisible(false);
             LoggedInUI loginLanding = new LoggedInUI(username);
             loginLanding.setVisible(true);
         }else{
             //show a dialog box
+            System.out.println("face doesn't match");
         }
         
     }
     
-    public void saveImage(String path, String userName){
+    public void saveImage(String path, String userName) throws ClassNotFoundException{
         BufferedImage img = null;
+        Directory d = null;
         try {
+            FileInputStream fileIn = new FileInputStream("directory.ser");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            d = (Directory) in.readObject();
+            in.close();
+            fileIn.close();
+
+        } catch (IOException e) {
+            d = new Directory();
+        }
+        
+        if (!d.search(userName)){
+            try {
             System.out.println("setting path");
             img = ImageIO.read(new File(path));
             
@@ -58,13 +81,35 @@ public class FaceRecognition {
             FaceDetector fd = new FaceDetector();
             BufferedImage editedImg = fd.detectFace(img);
             
+            
+            
             File outputfile = new File(userName + ".png");
+            
             System.out.println("saving File");
             ImageIO.write(editedImg, "png", outputfile);
-        } 
-        catch (IOException e) {
-            e.printStackTrace();
-        }    
+            
+            
+            BufferedImage editedImgPreview = fd.createPreview(img);
+            File outputfile2 = new File(userName + "Preview.png");
+            ImageIO.write(editedImgPreview, "png", outputfile2);
+            
+            //adding name to directory
+            d.addName(userName);
+            FileOutputStream fileOut = new FileOutputStream("directory.ser");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(d);
+            out.close();
+            fileOut.close();
+            
+            } 
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        
+        }else{
+            System.out.println("user name taken!");
+        }
+            
     }
     
     public BufferedImage loadImage(String fileName){
